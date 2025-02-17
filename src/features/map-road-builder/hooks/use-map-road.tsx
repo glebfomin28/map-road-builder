@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { LeafletMouseEvent } from 'leaflet';
 import {
     buildGraph,
@@ -9,13 +9,10 @@ import {
     getFilteredFeatures
 } from '../map-road-builder.utilities';
 import { IGeoJsonCollection } from '../map-road-builder.domain';
-import { useFetchGeoJson } from './use-fetch-geojson';
 
-export const useMapRoad = () => {
+export const useMapRoad = (dataGeoJson: IGeoJsonCollection | null) => {
     const [markerPositions, setMarkerPositions] = useState<[number, number][]>([]);
     const [routeCoords, setRouteCoords] = useState<[number, number][]>([]);
-
-    const { dataGeoJson, ...fetchGeoJsonState } = useFetchGeoJson();
 
     // Удаление маркера по клику
     const handleMarkerClick = (i: number) => {
@@ -36,14 +33,14 @@ export const useMapRoad = () => {
     };
 
     // Логика построения маршрута
-    const buildRoute = () => {
+    const buildRoute = useCallback(() => {
         if (!dataGeoJson || markerPositions.length < 2) return;
 
         const [latA, lngA] = markerPositions[0];
         const [latB, lngB] = markerPositions[1];
 
         // Фильтруем фичи по bbox
-        const bbox = getBBox(latA, lngA, latB, lngB, 0.02);
+        const bbox = getBBox(latA, lngA, latB, lngB, 0.05);
         const filteredFeatures = getFilteredFeatures(dataGeoJson, bbox);
 
         const smallGeojson: IGeoJsonCollection = { ...dataGeoJson, features: filteredFeatures };
@@ -55,7 +52,7 @@ export const useMapRoad = () => {
         const endId = findClosestNode(graph, latB, lngB);
 
         if (!startId || !endId) {
-            alert('Не найдены ближайшие вершины к точкам \nИщите в Арабских Эмиратах');
+            alert('Не найдены ближайшие вершины к точкам. \nИщите в Арабских Эмиратах.');
             setRouteCoords([]);
             setMarkerPositions([]);
             return;
@@ -69,7 +66,7 @@ export const useMapRoad = () => {
             return;
         }
         setRouteCoords(convertPathToLatLngArray(graph, path));
-    };
+    }, [dataGeoJson, markerPositions]);
 
     useEffect(() => {
         if (markerPositions.length === 2) {
@@ -77,13 +74,12 @@ export const useMapRoad = () => {
         } else {
             setRouteCoords([]);
         }
-    }, [markerPositions]);
+    }, [buildRoute, markerPositions]);
 
     return {
         markerPositions,
         routeCoords,
         handleMapClick,
-        handleMarkerClick,
-        ...fetchGeoJsonState
+        handleMarkerClick
     };
 };

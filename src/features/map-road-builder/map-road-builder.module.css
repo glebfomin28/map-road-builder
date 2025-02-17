@@ -3,20 +3,36 @@
   height: 100%;
 }
 
-.loading_overlay, .error_overlay {
+.uploader_overlay {
+  padding: 8px;
   position: fixed;
   z-index: 10000;
   inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(206, 206, 206, 0.75);
+  background: rgba(206, 206, 206, 0.8);
 }
 
-.error_overlay {
+.uploader_overlay_top {
+  inset: auto 0 0 0;
+}
+
+.uploader_custom_file_label {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: #2196F3;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.row, .col {
   display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.col {
   flex-direction: column;
-  gap: 12px;
-  color: rgb(181, 0, 0);
-  font-weight: bold;
 }
